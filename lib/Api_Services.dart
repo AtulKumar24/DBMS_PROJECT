@@ -5,7 +5,7 @@ class ApiService {
   // Use 'http://10.0.2.2:5000' for the Android Emulator to connect to your local Flask server.
   // For the iOS Simulator or a physical device, replace '10.0.2.2' with your computer's actual local IP address.
   // For a web build, you can use 'http://127.0.0.1:5000'.
-  final String _baseUrl = "http://127.0.0.1:5000";
+  final String _baseUrl = "https://dbms-backend-project.onrender.com";
 
   // --- Helper Methods ---
 
