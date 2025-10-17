@@ -1,4 +1,4 @@
-import 'package:dbms_project/home.dart';
+import 'package:dbms_project/Home.dart';
 import 'package:flutter/material.dart';
 
 void main() {
