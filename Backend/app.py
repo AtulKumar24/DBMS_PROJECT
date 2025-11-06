@@ -39,7 +39,6 @@ def test_connection():
 @app.route('/policyholders', methods=['GET'])
 def get_policyholders():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # type: ignore
-    # Corrected table name to lowercase
     cur.execute("SELECT * FROM policyholders")
     data = cur.fetchall()
     cur.close()
@@ -51,7 +50,6 @@ def add_policyholder():
     data = request.get_json()
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute(
             "INSERT INTO policyholders (name, dob, contact) VALUES (%s, %s, %s)",
             (data['name'], data['dob'], data.get('contact'))
@@ -64,11 +62,27 @@ def add_policyholder():
         return jsonify({'error': str(e)}), 400
 
 
+@app.route('/policyholders/<int:policyholder_id>', methods=['PUT'])
+def update_policyholder(policyholder_id):
+    data = request.get_json()
+    try:
+        cur = mysql.connection.cursor()
+        cur.execute("""
+            UPDATE policyholders
+            SET name = %s, dob = %s, contact = %s
+            WHERE policyholder_id = %s
+        """, (data['name'], data['dob'], data['contact'], policyholder_id))
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'message': 'Policyholder updated successfully!'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
 @app.route('/policyholders/<int:policyholder_id>', methods=['DELETE'])
 def delete_policyholder(policyholder_id):
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute("DELETE FROM policyholders WHERE policyholder_id = %s", (policyholder_id,))
         mysql.connection.commit()  # type: ignore
         cur.close()
@@ -81,7 +95,6 @@ def delete_policyholder(policyholder_id):
 @app.route('/policies', methods=['GET'])
 def get_policies():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # type: ignore
-    # Corrected table names to lowercase
     cur.execute("""
         SELECT p.policy_id, p.policyholder_id, ph.name AS policyholder_name,
                p.premium, p.policy_type
@@ -98,15 +111,31 @@ def add_policy():
     data = request.get_json()
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute(
             "INSERT INTO policy (policyholder_id, premium, policy_type) VALUES (%s, %s, %s)",
             (data['policyholder_id'], data['premium'], data['policy_type'])
         )
-        mysql.connection.commit()  # type: ignore
+        mysql.connection.commit()   # type: ignore
         new_id = cur.lastrowid
         cur.close()
         return jsonify({'message': 'Policy added successfully!', 'policy_id': new_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/policies/<int:policy_id>', methods=['PUT'])
+def update_policy(policy_id):
+    data = request.get_json()
+    try:
+        cur = mysql.connection.cursor()  # type: ignore
+        cur.execute("""
+            UPDATE policy
+            SET policyholder_id = %s, premium = %s, policy_type = %s
+            WHERE policy_id = %s
+        """, (data['policyholder_id'], data['premium'], data['policy_type'], policy_id))
+        mysql.connection.commit()   # type: ignore
+        cur.close()
+        return jsonify({'message': 'Policy updated successfully!'})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -115,7 +144,6 @@ def add_policy():
 def delete_policy(policy_id):
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute("DELETE FROM policy WHERE policy_id = %s", (policy_id,))
         mysql.connection.commit()  # type: ignore
         cur.close()
@@ -128,7 +156,6 @@ def delete_policy(policy_id):
 @app.route('/claims', methods=['GET'])
 def get_claims():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # type: ignore
-    # Corrected table names to lowercase
     cur.execute("""
         SELECT c.claim_id, c.policy_id, c.claim_date, c.claim_amount, c.status,
                p.policy_type, ph.name AS policyholder_name
@@ -146,15 +173,31 @@ def add_claim():
     data = request.get_json()
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute(
             "INSERT INTO claims (policy_id, claim_date, claim_amount, status) VALUES (%s, %s, %s, %s)",
             (data['policy_id'], data['claim_date'], data['claim_amount'], data['status'])
         )
-        mysql.connection.commit()  # type: ignore
+        mysql.connection.commit()  # type: ignore   
         new_id = cur.lastrowid
         cur.close()
         return jsonify({'message': 'Claim added successfully!', 'claim_id': new_id})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
+@app.route('/claims/<int:claim_id>', methods=['PUT'])
+def update_claim(claim_id):
+    data = request.get_json()
+    try:
+        cur = mysql.connection.cursor()  # type: ignore
+        cur.execute("""
+            UPDATE claims
+            SET policy_id = %s, claim_date = %s, claim_amount = %s, status = %s
+            WHERE claim_id = %s
+        """, (data['policy_id'], data['claim_date'], data['claim_amount'], data['status'], claim_id))
+        mysql.connection.commit()  # type: ignore
+        cur.close()
+        return jsonify({'message': 'Claim updated successfully!'})
     except Exception as e:
         return jsonify({'error': str(e)}), 400
 
@@ -163,9 +206,8 @@ def add_claim():
 def delete_claim(claim_id):
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute("DELETE FROM claims WHERE claim_id = %s", (claim_id,))
-        mysql.connection.commit()  # type: ignore
+        mysql.connection.commit()  # type: ignore   
         cur.close()
         return jsonify({'message': 'Claim deleted successfully!'})
     except Exception as e:
@@ -176,7 +218,6 @@ def delete_claim(claim_id):
 @app.route('/agents', methods=['GET'])
 def get_agents():
     cur = mysql.connection.cursor(MySQLdb.cursors.DictCursor)  # type: ignore
-    # Corrected table name to lowercase
     cur.execute("SELECT * FROM agents")
     data = cur.fetchall()
     cur.close()
@@ -188,7 +229,6 @@ def add_agent():
     data = request.get_json()
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute(
             "INSERT INTO agents (agent_name, phone) VALUES (%s, %s)",
             (data['agent_name'], data.get('phone'))
@@ -201,11 +241,27 @@ def add_agent():
         return jsonify({'error': str(e)}), 400
 
 
+@app.route('/agents/<int:agent_id>', methods=['PUT'])
+def update_agent(agent_id):
+    data = request.get_json()
+    try:
+        cur = mysql.connection.cursor()  # type: ignore
+        cur.execute("""
+            UPDATE agents
+            SET agent_name = %s, phone = %s
+            WHERE agent_id = %s
+        """, (data['agent_name'], data.get('phone'), agent_id))
+        mysql.connection.commit()   # type: ignore
+        cur.close()
+        return jsonify({'message': 'Agent updated successfully!'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+
 @app.route('/agents/<int:agent_id>', methods=['DELETE'])
 def delete_agent(agent_id):
     try:
         cur = mysql.connection.cursor()  # type: ignore
-        # Corrected table name to lowercase
         cur.execute("DELETE FROM agents WHERE agent_id = %s", (agent_id,))
         mysql.connection.commit()  # type: ignore
         cur.close()
@@ -217,4 +273,3 @@ def delete_agent(agent_id):
 # ------------------- RUN APP -------------------
 if __name__ == '__main__':
     app.run(debug=True)
-
