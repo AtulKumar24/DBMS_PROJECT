@@ -45,13 +45,14 @@ class ApiService {
   }
 
   // --- PUT (for updates) ---
+  // REVERTED: Back to using http.put and NO trailing slash
   Future<Map<String, dynamic>> _put(
       String endpoint,
       String id,
       Map<String, dynamic> body,
       ) async {
-    final response = await http.put(
-      Uri.parse('$_baseUrl/$endpoint/$id'),
+    final response = await http.put( // <-- THE FIX IS HERE
+      Uri.parse('$_baseUrl/$endpoint/$id'), // <-- AND HERE (no trailing slash)
       headers: {'Content-Type': 'application/json; charset=UTF-8'},
       body: json.encode(body),
     );
@@ -66,7 +67,9 @@ class ApiService {
 
   // --- DELETE ---
   Future<void> _delete(String endpoint, String id) async {
-    final response = await http.delete(Uri.parse('$_baseUrl/$endpoint/$id'));
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/$endpoint/$id'), // <-- NO trailing slash
+    );
     if (response.statusCode != 200) {
       throw Exception(
         'Failed to delete item from $endpoint. Status code: ${response.statusCode}',
@@ -94,7 +97,8 @@ class ApiService {
     required String dob,
     required String contact,
   }) =>
-      _put('policyholders', id, {'name': name, 'dob': dob, 'contact': contact});
+      _put('policyholders', id, // REVERTED: Back to _put
+          {'name': name, 'dob': dob, 'contact': contact});
 
   Future<void> deletePolicyholder(String id) => _delete('policyholders', id);
 
@@ -121,7 +125,7 @@ class ApiService {
     required String premium,
     required String policyType,
   }) =>
-      _put('policies', id, {
+      _put('policies', id, { // REVERTED: Back to _put
         'policyholder_id': int.parse(policyholderId),
         'premium': premium,
         'policy_type': policyType,
@@ -155,7 +159,7 @@ class ApiService {
     required String claimAmount,
     required String status,
   }) =>
-      _put('claims', id, {
+      _put('claims', id, { // REVERTED: Back to _put
         'policy_id': int.parse(policyId),
         'claim_date': claimDate,
         'claim_amount': claimAmount,
@@ -181,7 +185,8 @@ class ApiService {
     required String agentName,
     required String phone,
   }) =>
-      _put('agents', id, {'agent_name': agentName, 'phone': phone});
+      _put('agents', id, // REVERTED: Back to _put
+          {'agent_name': agentName, 'phone': phone});
 
   Future<void> deleteAgent(String id) => _delete('agents', id);
 }
